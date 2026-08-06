@@ -1,0 +1,26 @@
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+
+# Backend
+backend/build/
+backend/.gradle/
+backend/bin/
+backend/out/
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Docker
+postgres_data/
+minio_data/

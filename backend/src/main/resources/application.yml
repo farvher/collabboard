@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: collabboard
+
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/${POSTGRES_DB:collabboard}
+    username: ${POSTGRES_USER:collabboard}
+    password: ${POSTGRES_PASSWORD:collabboard123}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:default-dev-secret-key-change-in-production-min-32-chars}
+  access-token-expiration: 900000    # 15 minutes
+  refresh-token-expiration: 604800000 # 7 days
+
+# MinIO Configuration
+minio:
+  endpoint: http://localhost:9000
+  access-key: ${MINIO_ROOT_USER:minioadmin}
+  secret-key: ${MINIO_ROOT_PASSWORD:minioadmin123}
+  bucket-name: collabboard
