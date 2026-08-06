@@ -98,6 +98,42 @@ public class BoardContentController {
         ));
     }
 
+    @PutMapping("/force")
+    @Transactional
+    public ResponseEntity<BoardContentResponse> forceSaveContent(
+            @PathVariable UUID boardId,
+            @RequestBody ForceSaveRequest request,
+            Authentication auth) {
+        UUID userId = (UUID) auth.getPrincipal();
+        verifyAccess(boardId, userId);
+
+        BoardContent content = boardContentRepository.findByBoardId(boardId)
+                .orElseThrow(() -> new EntityNotFoundException("Board content not found"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        content.setCanvasData(request.canvasData());
+        content.setVersion(content.getVersion() + 1);
+        content.setLastSavedBy(user);
+        content.setUpdatedAt(LocalDateTime.now());
+
+        content = boardContentRepository.save(content);
+
+        // Auto-create version snapshot
+        BoardVersion version = BoardVersion.builder()
+                .board(content.getBoard())
+                .savedBy(user)
+                .canvasSnapshot(request.canvasData())
+                .versionNumber(content.getVersion())
+                .build();
+        boardVersionRepository.save(version);
+
+        return ResponseEntity.ok(BoardContentResponse.from(content));
+    }
+
+    public record ForceSaveRequest(String canvasData) {}
+
     private void verifyAccess(UUID boardId, UUID userId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new EntityNotFoundException("Board not found"));

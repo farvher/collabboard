@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import { useCanvasStore } from "@/stores/canvas-store";
 import { api, ApiClientError } from "@/lib/api";
 
-export type SaveStatus = "saved" | "saving" | "unsaved" | "error" | "conflict";
+export type SaveStatus = "saved" | "saving" | "unsaved" | "error" | "conflict" | "stale";
 
 interface ContentResponse {
   boardId: string;
@@ -12,6 +12,12 @@ interface ContentResponse {
   version: number;
   lastSavedByName: string | null;
   updatedAt: string;
+}
+
+interface VersionResponse {
+  version: number;
+  updatedAt: string;
+  lastSavedBy: string | null;
 }
 
 interface CanvasData {
@@ -24,8 +30,11 @@ export function useCanvasPersistence(boardId: string) {
   const { nodes, edges, loadCanvas } = useCanvasStore();
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
   const [lastSavedBy, setLastSavedBy] = useState<string | null>(null);
+  const [remoteVersion, setRemoteVersion] = useState<number | null>(null);
+  const [remoteSavedBy, setRemoteSavedBy] = useState<string | null>(null);
   const versionRef = useRef<number>(1);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isLoadedRef = useRef(false);
   const prevDataRef = useRef<string>("");
 
@@ -48,20 +57,39 @@ export function useCanvasPersistence(boardId: string) {
         isLoadedRef.current = true;
         prevDataRef.current = content.canvasData || "{}";
       } catch {
-        // Board might not have content yet
         isLoadedRef.current = true;
       }
     }
     load();
   }, [boardId, loadCanvas]);
 
-  // Save function
+  // Polling: check for remote changes every 60s
+  useEffect(() => {
+    pollingRef.current = setInterval(async () => {
+      if (!isLoadedRef.current) return;
+      try {
+        const ver = await api.get<VersionResponse>(`/api/boards/${boardId}/content/version`);
+        if (ver.version > versionRef.current) {
+          setRemoteVersion(ver.version);
+          setRemoteSavedBy(ver.lastSavedBy);
+          setSaveStatus("stale");
+        }
+      } catch {
+        // ignore polling errors
+      }
+    }, 60000);
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [boardId]);
+
+  // Save function (with optimistic locking)
   const save = useCallback(async () => {
     if (!isLoadedRef.current) return;
 
     const canvasData = JSON.stringify({ nodes, edges });
 
-    // Don't save if nothing changed
     if (canvasData === prevDataRef.current) {
       setSaveStatus("saved");
       return;
@@ -75,6 +103,8 @@ export function useCanvasPersistence(boardId: string) {
       });
       versionRef.current = response.version;
       setLastSavedBy(response.lastSavedByName);
+      setRemoteVersion(null);
+      setRemoteSavedBy(null);
       prevDataRef.current = canvasData;
       setSaveStatus("saved");
     } catch (err) {
@@ -86,6 +116,28 @@ export function useCanvasPersistence(boardId: string) {
     }
   }, [boardId, nodes, edges]);
 
+  // Force save (bypass version check)
+  const forceSave = useCallback(async () => {
+    if (!isLoadedRef.current) return;
+
+    const canvasData = JSON.stringify({ nodes, edges });
+
+    setSaveStatus("saving");
+    try {
+      const response = await api.put<ContentResponse>(`/api/boards/${boardId}/content/force`, {
+        canvasData,
+      });
+      versionRef.current = response.version;
+      setLastSavedBy(response.lastSavedByName);
+      setRemoteVersion(null);
+      setRemoteSavedBy(null);
+      prevDataRef.current = canvasData;
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("error");
+    }
+  }, [boardId, nodes, edges]);
+
   // Auto-save with debounce (30s after last change)
   useEffect(() => {
     if (!isLoadedRef.current) return;
@@ -93,17 +145,22 @@ export function useCanvasPersistence(boardId: string) {
     const currentData = JSON.stringify({ nodes, edges });
     if (currentData === prevDataRef.current) return;
 
-    setSaveStatus("unsaved");
+    // Don't auto-overwrite unsaved status if we're already in conflict/stale
+    if (saveStatus !== "conflict" && saveStatus !== "stale") {
+      setSaveStatus("unsaved");
+    }
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      save();
+      if (saveStatus !== "conflict" && saveStatus !== "stale") {
+        save();
+      }
     }, 30000);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [nodes, edges, save]);
+  }, [nodes, edges, save, saveStatus]);
 
   // Ctrl+S handler
   useEffect(() => {
@@ -117,11 +174,14 @@ export function useCanvasPersistence(boardId: string) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [save]);
 
-  // Reload on conflict
+  // Reload (pull latest from server)
   const reload = useCallback(async () => {
     try {
       const content = await api.get<ContentResponse>(`/api/boards/${boardId}/content`);
       versionRef.current = content.version;
+      setLastSavedBy(content.lastSavedByName);
+      setRemoteVersion(null);
+      setRemoteSavedBy(null);
       if (content.canvasData && content.canvasData !== "{}") {
         const parsed: CanvasData = JSON.parse(content.canvasData);
         loadCanvas(parsed.nodes as never[] || [], parsed.edges as never[] || []);
@@ -133,5 +193,5 @@ export function useCanvasPersistence(boardId: string) {
     }
   }, [boardId, loadCanvas]);
 
-  return { saveStatus, save, reload, lastSavedBy };
+  return { saveStatus, save, forceSave, reload, lastSavedBy, remoteVersion, remoteSavedBy };
 }

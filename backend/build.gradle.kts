@@ -41,6 +41,9 @@ dependencies {
     // MinIO
     implementation("io.minio:minio:8.5.14")
 
+    // PDF Export
+    implementation("com.github.librepdf:openpdf:2.0.3")
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

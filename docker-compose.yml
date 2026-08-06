@@ -48,6 +48,48 @@ services:
       echo 'Bucket created successfully';
       "
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: collabboard-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-collabboard}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-collabboard}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-collabboard123}
+      JWT_SECRET: ${JWT_SECRET:-default-dev-secret-key-change-in-production-min-32-chars}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_BUCKET_NAME: collabboard
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: collabboard-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    depends_on:
+      backend:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   minio_data:

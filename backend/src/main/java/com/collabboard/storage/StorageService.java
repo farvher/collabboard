@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -47,6 +48,25 @@ public class StorageService {
             throw new StorageException("Failed to upload file", e);
         }
 
+        return key;
+    }
+
+    /**
+     * Upload raw bytes to MinIO.
+     * @return the object key (path) in the bucket
+     */
+    public String uploadBytes(byte[] data, String key, String contentType) {
+        try (InputStream inputStream = new ByteArrayInputStream(data)) {
+            minioClient.putObject(PutObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(key)
+                    .stream(inputStream, data.length, -1)
+                    .contentType(contentType)
+                    .build());
+        } catch (Exception e) {
+            log.error("Failed to upload bytes to MinIO: {}", e.getMessage(), e);
+            throw new StorageException("Failed to upload bytes", e);
+        }
         return key;
     }
 

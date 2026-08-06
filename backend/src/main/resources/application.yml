@@ -3,9 +3,9 @@ spring:
     name: collabboard
 
   datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/${POSTGRES_DB:collabboard}
-    username: ${POSTGRES_USER:collabboard}
-    password: ${POSTGRES_PASSWORD:collabboard123}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://127.0.0.1:5432/collabboard}
+    username: ${SPRING_DATASOURCE_USERNAME:collabboard}
+    password: ${SPRING_DATASOURCE_PASSWORD:collabboard123}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -38,7 +38,7 @@ jwt:
 
 # MinIO Configuration
 minio:
-  endpoint: http://localhost:9000
-  access-key: ${MINIO_ROOT_USER:minioadmin}
-  secret-key: ${MINIO_ROOT_PASSWORD:minioadmin123}
-  bucket-name: collabboard
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin123}
+  bucket-name: ${MINIO_BUCKET_NAME:collabboard}
