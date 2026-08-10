@@ -59,4 +59,10 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+
+    // Allow excluding integration tests via: ./gradlew test -PexcludeIntegration
+    if (project.hasProperty("excludeIntegration")) {
+        exclude("com/collabboard/integration/**")
+        exclude("com/collabboard/CollabBoardApplicationTests*")
+    }
 }
