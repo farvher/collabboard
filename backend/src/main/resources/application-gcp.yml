@@ -1,7 +1,7 @@
 spring:
   datasource:
-    # Cloud SQL via Unix socket (no Cloud SQL Proxy needed in Cloud Run)
-    url: jdbc:postgresql:///${DB_NAME:collabboard}?cloudSqlInstance=${CLOUD_SQL_CONNECTION_NAME}&socketFactory=com.google.cloud.sql.postgres.SocketFactory
+    # Cloud SQL connection via socket factory (Cloud Run auto-mounts the Unix socket)
+    url: jdbc:postgresql:///${DB_NAME:collabboard}?cloudSqlInstance=${CLOUD_SQL_CONNECTION_NAME}&socketFactory=com.google.cloud.sql.postgres.SocketFactory&user=${DB_USER:collabboard}&password=${DB_PASSWORD}
     username: ${DB_USER:collabboard}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
