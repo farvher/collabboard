@@ -1,0 +1,197 @@
+name: Deploy to GCP
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: collabboard-505115
+  REGION: us-central1
+  AR_REPO: collabboard
+  BACKEND_SERVICE: collabboard-backend
+  FRONTEND_SERVICE: collabboard-frontend
+  SERVICE_ACCOUNT: collabboard-sa@collabboard-505115.iam.gserviceaccount.com
+  CLOUD_SQL_CONNECTION: collabboard-505115:us-central1:collabboard-db
+  GCS_BUCKET: collabboard-505115-storage
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Deploy Backend
+  # ─────────────────────────────────────────────
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    outputs:
+      backend_url: ${{ steps.deploy.outputs.url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=sha-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push backend image
+        run: |
+          IMAGE=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend
+          docker build -t ${IMAGE}:${{ steps.tag.outputs.tag }} -t ${IMAGE}:latest ./backend
+          docker push ${IMAGE}:${{ steps.tag.outputs.tag }}
+          docker push ${IMAGE}:latest
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.BACKEND_SERVICE }}
+          region: ${{ env.REGION }}
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ steps.tag.outputs.tag }}
+          env_vars: |
+            SPRING_PROFILES_ACTIVE=gcp
+            CLOUD_SQL_CONNECTION_NAME=${{ env.CLOUD_SQL_CONNECTION }}
+            DB_NAME=collabboard
+            DB_USER=collabboard
+            GCS_BUCKET_NAME=${{ env.GCS_BUCKET }}
+          secrets: |
+            DB_PASSWORD=db-password:latest
+            JWT_SECRET=jwt-secret:latest
+          flags: |
+            --add-cloudsql-instances=${{ env.CLOUD_SQL_CONNECTION }}
+            --service-account=${{ env.SERVICE_ACCOUNT }}
+            --port=8080
+            --memory=512Mi
+            --cpu=1
+            --min-instances=0
+            --max-instances=5
+            --timeout=60s
+            --allow-unauthenticated
+
+      - name: Show backend URL
+        run: echo "Backend deployed at ${{ steps.deploy.outputs.url }}"
+
+  # ─────────────────────────────────────────────
+  # Deploy Frontend
+  # ─────────────────────────────────────────────
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    permissions:
+      contents: read
+      id-token: write
+
+    outputs:
+      frontend_url: ${{ steps.deploy.outputs.url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=sha-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push frontend image
+        run: |
+          IMAGE=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=${{ needs.deploy-backend.outputs.backend_url }} \
+            -t ${IMAGE}:${{ steps.tag.outputs.tag }} \
+            -t ${IMAGE}:latest \
+            ./frontend
+          docker push ${IMAGE}:${{ steps.tag.outputs.tag }}
+          docker push ${IMAGE}:latest
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.FRONTEND_SERVICE }}
+          region: ${{ env.REGION }}
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ steps.tag.outputs.tag }}
+          flags: |
+            --port=3000
+            --memory=256Mi
+            --cpu=1
+            --min-instances=0
+            --max-instances=3
+            --timeout=30s
+            --allow-unauthenticated
+
+      - name: Show frontend URL
+        run: echo "Frontend deployed at ${{ steps.deploy.outputs.url }}"
+
+  # ─────────────────────────────────────────────
+  # Update Backend CORS
+  # ─────────────────────────────────────────────
+  update-cors:
+    name: Update Backend CORS
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend]
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Update CORS on backend
+        run: |
+          gcloud run services update ${{ env.BACKEND_SERVICE }} \
+            --region=${{ env.REGION }} \
+            --update-env-vars="CORS_ALLOWED_ORIGINS=${{ needs.deploy-frontend.outputs.frontend_url }}" \
+            --quiet
+
+      - name: Deployment summary
+        run: |
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | ${{ needs.deploy-frontend.outputs.frontend_url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | ${{ needs.deploy-backend.outputs.backend_url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Health | ${{ needs.deploy-backend.outputs.backend_url }}/actuator/health |" >> $GITHUB_STEP_SUMMARY

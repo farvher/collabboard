@@ -38,8 +38,14 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
-    // MinIO
+    // MinIO (local/dev storage)
     implementation("io.minio:minio:8.5.14")
+
+    // Google Cloud Storage (production)
+    implementation("com.google.cloud:google-cloud-storage:2.45.0")
+
+    // Cloud SQL PostgreSQL socket factory
+    implementation("com.google.cloud.sql:postgres-socket-factory:1.21.0")
 
     // PDF Export
     implementation("com.github.librepdf:openpdf:2.0.3")
