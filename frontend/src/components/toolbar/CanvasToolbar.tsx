@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useCanvasStore, type CanvasTool } from "@/stores/canvas-store";
 
 interface ToolDef {
@@ -56,44 +57,116 @@ const tools: ToolDef[] = [
   },
 ];
 
+// On small screens, show only the first 6 tools; rest go into overflow
+const COMPACT_VISIBLE_COUNT = 6;
+
 export default function CanvasToolbar() {
   const { selectedTool, setSelectedTool, deleteSelected } = useCanvasStore();
+  const [showOverflow, setShowOverflow] = useState(false);
+
+  const visibleTools = tools.slice(0, COMPACT_VISIBLE_COUNT);
+  const overflowTools = tools.slice(COMPACT_VISIBLE_COUNT);
 
   return (
-    <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-0.5 bg-white rounded-xl shadow-lg border border-gray-200 p-1.5">
-      {tools.map((tool, i) => {
-        const prevGroup = i > 0 ? tools[i - 1].group : tool.group;
+    <div
+      className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-0.5 bg-[var(--color-bg-primary)] rounded-xl shadow-[var(--shadow-lg)] border border-[var(--color-border-primary)] p-1.5 transition-theme"
+      role="toolbar"
+      aria-label="Canvas tools"
+      aria-orientation="vertical"
+    >
+      {/* Always visible tools */}
+      {visibleTools.map((tool, i) => {
+        const prevGroup = i > 0 ? visibleTools[i - 1].group : tool.group;
         const showDivider = prevGroup !== tool.group;
         return (
           <div key={tool.id}>
-            {showDivider && <div className="border-t border-gray-200 my-1" />}
-            <button
-              onClick={() => setSelectedTool(tool.id)}
-              title={tool.label}
-              className={`p-2 rounded-lg transition-colors ${
-                selectedTool === tool.id
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                {tool.icon}
-              </svg>
-            </button>
+            {showDivider && <div className="border-t border-[var(--color-border-primary)] my-1" aria-hidden="true" />}
+            <ToolButton tool={tool} selectedTool={selectedTool} onClick={() => setSelectedTool(tool.id)} />
           </div>
         );
       })}
 
-      <div className="border-t border-gray-200 my-1" />
+      {/* Overflow tools — hidden on small screens unless expanded */}
+      <div className="hidden sm:contents">
+        {overflowTools.map((tool, i) => {
+          const prevGroup = i > 0 ? overflowTools[i - 1].group : visibleTools[visibleTools.length - 1]?.group;
+          const showDivider = prevGroup !== tool.group;
+          return (
+            <div key={tool.id}>
+              {showDivider && <div className="border-t border-[var(--color-border-primary)] my-1" aria-hidden="true" />}
+              <ToolButton tool={tool} selectedTool={selectedTool} onClick={() => setSelectedTool(tool.id)} />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Mobile overflow toggle */}
+      {overflowTools.length > 0 && (
+        <div className="sm:hidden">
+          <div className="border-t border-[var(--color-border-primary)] my-1" aria-hidden="true" />
+          <button
+            onClick={() => setShowOverflow(!showOverflow)}
+            title={showOverflow ? "Hide more tools" : "More tools"}
+            aria-expanded={showOverflow}
+            aria-label="More tools"
+            className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors w-full flex items-center justify-center"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d={showOverflow ? "M4.5 15.75l7.5-7.5 7.5 7.5" : "M19.5 8.25l-7.5 7.5-7.5-7.5"} />
+            </svg>
+          </button>
+
+          {showOverflow && overflowTools.map((tool) => (
+            <ToolButton
+              key={tool.id}
+              tool={tool}
+              selectedTool={selectedTool}
+              onClick={() => { setSelectedTool(tool.id); setShowOverflow(false); }}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="border-t border-[var(--color-border-primary)] my-1" aria-hidden="true" />
       <button
         onClick={deleteSelected}
         title="Delete selected (Del)"
-        className="p-2 rounded-lg text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors"
+        aria-label="Delete selected elements"
+        className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-danger-light)] hover:text-[var(--color-danger)] transition-colors"
       >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
         </svg>
       </button>
     </div>
+  );
+}
+
+function ToolButton({
+  tool,
+  selectedTool,
+  onClick,
+}: {
+  tool: ToolDef;
+  selectedTool: CanvasTool;
+  onClick: () => void;
+}) {
+  const isActive = selectedTool === tool.id;
+  return (
+    <button
+      onClick={onClick}
+      title={tool.label}
+      aria-label={tool.label}
+      aria-pressed={isActive}
+      className={`p-2 rounded-lg transition-colors ${
+        isActive
+          ? "bg-[var(--color-brand-light)] text-[var(--color-brand-text)]"
+          : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]"
+      }`}
+    >
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+        {tool.icon}
+      </svg>
+    </button>
   );
 }

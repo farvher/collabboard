@@ -1,1 +1,181 @@
 @import "tailwindcss";
+
+/* === Dark Mode Configuration (TailwindCSS v4) === */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* === Theme Variables === */
+:root {
+  /* Backgrounds */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-bg-tertiary: #f3f4f6;
+  --color-bg-hover: #f3f4f6;
+  --color-bg-active: #eff6ff;
+
+  /* Text */
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-tertiary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-text-inverse: #ffffff;
+
+  /* Borders */
+  --color-border-primary: #e5e7eb;
+  --color-border-secondary: #f3f4f6;
+  --color-border-focus: #3b82f6;
+
+  /* Brand */
+  --color-brand: #2563eb;
+  --color-brand-hover: #1d4ed8;
+  --color-brand-light: #eff6ff;
+  --color-brand-text: #1d4ed8;
+
+  /* Danger */
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-light: #fef2f2;
+  --color-danger-text: #b91c1c;
+
+  /* Surfaces */
+  --color-surface-card: #ffffff;
+  --color-surface-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Canvas */
+  --color-canvas-bg: #f9fafb;
+  --color-canvas-grid: #e5e7eb;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  /* Backgrounds */
+  --color-bg-primary: #1f2937;
+  --color-bg-secondary: #111827;
+  --color-bg-tertiary: #374151;
+  --color-bg-hover: #374151;
+  --color-bg-active: #1e3a5f;
+
+  /* Text */
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-text-tertiary: #9ca3af;
+  --color-text-muted: #6b7280;
+  --color-text-inverse: #111827;
+
+  /* Borders */
+  --color-border-primary: #374151;
+  --color-border-secondary: #1f2937;
+  --color-border-focus: #60a5fa;
+
+  /* Brand */
+  --color-brand: #3b82f6;
+  --color-brand-hover: #2563eb;
+  --color-brand-light: #1e3a5f;
+  --color-brand-text: #93c5fd;
+
+  /* Danger */
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+  --color-danger-light: #451a1a;
+  --color-danger-text: #fca5a5;
+
+  /* Surfaces */
+  --color-surface-card: #1f2937;
+  --color-surface-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Canvas */
+  --color-canvas-bg: #111827;
+  --color-canvas-grid: #374151;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+}
+
+/* === Global Styles === */
+* {
+  scrollbar-color: var(--color-text-muted) transparent;
+}
+
+/* === Focus Visible (Accessibility) === */
+*:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* === Skip to Content Link === */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-brand);
+  color: white;
+  font-weight: 600;
+  border-radius: 0 0 0.5rem 0;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* === Transitions === */
+@media (prefers-reduced-motion: no-preference) {
+  .transition-theme {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+/* === Toast Animations === */
+@keyframes toast-enter {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-exit {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.toast-enter {
+  animation: toast-enter 0.3s ease-out;
+}
+
+.toast-exit {
+  animation: toast-exit 0.2s ease-in forwards;
+}
+
+/* === Skeleton Animation === */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  background-color: var(--color-bg-tertiary);
+  border-radius: 0.5rem;
+}

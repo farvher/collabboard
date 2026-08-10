@@ -20,15 +20,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+      "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
 
     const variants = {
       primary:
-        "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
+        "bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-hover)] focus-visible:ring-[var(--color-brand)]",
       secondary:
-        "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500 border border-gray-300",
-      ghost: "text-gray-700 hover:bg-gray-100 focus:ring-gray-500",
-      danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+        "bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] focus-visible:ring-[var(--color-border-focus)] border border-[var(--color-border-primary)]",
+      ghost:
+        "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] focus-visible:ring-[var(--color-border-focus)]",
+      danger:
+        "bg-[var(--color-danger)] text-white hover:bg-[var(--color-danger-hover)] focus-visible:ring-[var(--color-danger)]",
     };
 
     const sizes = {
@@ -42,6 +44,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
         disabled={disabled || isLoading}
+        aria-busy={isLoading || undefined}
         {...props}
       >
         {isLoading && (
@@ -49,6 +52,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             className="animate-spin -ml-1 mr-2 h-4 w-4"
             fill="none"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <circle
               className="opacity-25"
