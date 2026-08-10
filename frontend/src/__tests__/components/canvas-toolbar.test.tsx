@@ -100,8 +100,8 @@ describe("CanvasToolbar", () => {
     render(<CanvasToolbar />);
 
     const rectButton = screen.getByTitle("Rectangle");
-    expect(rectButton.className).toContain("bg-blue-100");
-    expect(rectButton.className).toContain("text-blue-700");
+    expect(rectButton.className).toContain("--color-brand-light");
+    expect(rectButton.className).toContain("--color-brand-text");
   });
 
   it("should not highlight inactive tools", () => {
@@ -109,8 +109,8 @@ describe("CanvasToolbar", () => {
     render(<CanvasToolbar />);
 
     const selectButton = screen.getByTitle("Select");
-    expect(selectButton.className).toContain("text-gray-600");
-    expect(selectButton.className).not.toContain("bg-blue-100");
+    expect(selectButton.className).toContain("--color-text-secondary");
+    expect(selectButton.className).not.toContain("--color-brand-light");
   });
 
   it("should highlight select tool by default", () => {
@@ -118,7 +118,7 @@ describe("CanvasToolbar", () => {
     render(<CanvasToolbar />);
 
     const selectButton = screen.getByTitle("Select");
-    expect(selectButton.className).toContain("bg-blue-100");
+    expect(selectButton.className).toContain("--color-brand-light");
   });
 
   it("should render SVG icons for each tool", () => {

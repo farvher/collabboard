@@ -46,25 +46,25 @@ describe("Button", () => {
   it("should apply primary variant styles by default", () => {
     render(<Button>Primary</Button>);
     const button = screen.getByRole("button");
-    expect(button.className).toContain("bg-blue-600");
+    expect(button.className).toContain("--color-brand");
   });
 
   it("should apply secondary variant styles", () => {
     render(<Button variant="secondary">Secondary</Button>);
     const button = screen.getByRole("button");
-    expect(button.className).toContain("bg-gray-100");
+    expect(button.className).toContain("--color-bg-tertiary");
   });
 
   it("should apply danger variant styles", () => {
     render(<Button variant="danger">Danger</Button>);
     const button = screen.getByRole("button");
-    expect(button.className).toContain("bg-red-600");
+    expect(button.className).toContain("--color-danger");
   });
 
   it("should apply ghost variant styles", () => {
     render(<Button variant="ghost">Ghost</Button>);
     const button = screen.getByRole("button");
-    expect(button.className).toContain("hover:bg-gray-100");
+    expect(button.className).toContain("--color-text-secondary");
   });
 
   it("should apply small size", () => {
@@ -122,7 +122,7 @@ describe("Input", () => {
   it("should apply error styling when error exists", () => {
     render(<Input id="pw" error="Error" />);
     const input = screen.getByRole("textbox");
-    expect(input.className).toContain("border-red-500");
+    expect(input.className).toContain("--color-danger");
   });
 
   it("should handle value changes", async () => {
@@ -164,7 +164,7 @@ describe("Card", () => {
     const card = screen.getByText("Content").closest("div");
     expect(card?.className).toContain("rounded-xl");
     expect(card?.className).toContain("border");
-    expect(card?.className).toContain("shadow-sm");
+    expect(card?.className).toContain("shadow");
   });
 
   it("should render CardHeader", () => {
