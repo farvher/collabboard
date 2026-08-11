@@ -20,7 +20,7 @@ export default function RegisterPage() {
     e.preventDefault();
     try {
       await register(email, password, displayName || undefined);
-      router.push("/boards");
+      router.push("/dashboard");
     } catch {
       // Error is already set in the store
     }

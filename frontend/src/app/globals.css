@@ -3,97 +3,123 @@
 /* === Dark Mode Configuration (TailwindCSS v4) === */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* === Theme Variables === */
+/* === Theme Variables — FlowSync-inspired === */
 :root {
   /* Backgrounds */
   --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f9fafb;
-  --color-bg-tertiary: #f3f4f6;
-  --color-bg-hover: #f3f4f6;
-  --color-bg-active: #eff6ff;
+  --color-bg-secondary: #f8f9fc;
+  --color-bg-tertiary: #f1f3f9;
+  --color-bg-hover: #f1f3f9;
+  --color-bg-active: #ede9fe;
 
   /* Text */
-  --color-text-primary: #111827;
-  --color-text-secondary: #4b5563;
-  --color-text-tertiary: #6b7280;
-  --color-text-muted: #9ca3af;
+  --color-text-primary: #1a1d2e;
+  --color-text-secondary: #4a5068;
+  --color-text-tertiary: #6b7194;
+  --color-text-muted: #9ca3bf;
   --color-text-inverse: #ffffff;
 
   /* Borders */
-  --color-border-primary: #e5e7eb;
-  --color-border-secondary: #f3f4f6;
-  --color-border-focus: #3b82f6;
+  --color-border-primary: #e8eaf0;
+  --color-border-secondary: #f1f3f9;
+  --color-border-focus: #7c3aed;
 
-  /* Brand */
-  --color-brand: #2563eb;
-  --color-brand-hover: #1d4ed8;
-  --color-brand-light: #eff6ff;
-  --color-brand-text: #1d4ed8;
+  /* Brand (Purple/Violet) */
+  --color-brand: #7c3aed;
+  --color-brand-hover: #6d28d9;
+  --color-brand-light: #ede9fe;
+  --color-brand-text: #6d28d9;
 
-  /* Danger */
-  --color-danger: #dc2626;
-  --color-danger-hover: #b91c1c;
+  /* Success (Green) */
+  --color-success: #10b981;
+  --color-success-light: #ecfdf5;
+  --color-success-text: #059669;
+
+  /* Danger (Red/Orange) */
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
   --color-danger-light: #fef2f2;
-  --color-danger-text: #b91c1c;
+  --color-danger-text: #dc2626;
+
+  /* Warning (Orange) */
+  --color-warning: #f59e0b;
+  --color-warning-light: #fffbeb;
+
+  /* Accent (Pink/Rose for variety) */
+  --color-accent: #ec4899;
+  --color-accent-light: #fdf2f8;
 
   /* Surfaces */
   --color-surface-card: #ffffff;
-  --color-surface-overlay: rgba(0, 0, 0, 0.5);
+  --color-surface-overlay: rgba(0, 0, 0, 0.4);
 
   /* Canvas */
-  --color-canvas-bg: #f9fafb;
-  --color-canvas-grid: #e5e7eb;
+  --color-canvas-bg: #f8f9fc;
+  --color-canvas-grid: #e8eaf0;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
 }
 
 .dark {
   /* Backgrounds */
-  --color-bg-primary: #1f2937;
-  --color-bg-secondary: #111827;
-  --color-bg-tertiary: #374151;
-  --color-bg-hover: #374151;
-  --color-bg-active: #1e3a5f;
+  --color-bg-primary: #1a1d2e;
+  --color-bg-secondary: #111322;
+  --color-bg-tertiary: #252842;
+  --color-bg-hover: #252842;
+  --color-bg-active: #2e1f5e;
 
   /* Text */
-  --color-text-primary: #f9fafb;
-  --color-text-secondary: #d1d5db;
-  --color-text-tertiary: #9ca3af;
-  --color-text-muted: #6b7280;
-  --color-text-inverse: #111827;
+  --color-text-primary: #f1f3f9;
+  --color-text-secondary: #c8cde0;
+  --color-text-tertiary: #9ca3bf;
+  --color-text-muted: #6b7194;
+  --color-text-inverse: #1a1d2e;
 
   /* Borders */
-  --color-border-primary: #374151;
-  --color-border-secondary: #1f2937;
-  --color-border-focus: #60a5fa;
+  --color-border-primary: #2d3154;
+  --color-border-secondary: #1f2340;
+  --color-border-focus: #a78bfa;
 
   /* Brand */
-  --color-brand: #3b82f6;
-  --color-brand-hover: #2563eb;
-  --color-brand-light: #1e3a5f;
-  --color-brand-text: #93c5fd;
+  --color-brand: #8b5cf6;
+  --color-brand-hover: #7c3aed;
+  --color-brand-light: #2e1f5e;
+  --color-brand-text: #c4b5fd;
+
+  /* Success */
+  --color-success: #34d399;
+  --color-success-light: #0d3b2e;
+  --color-success-text: #6ee7b7;
 
   /* Danger */
-  --color-danger: #ef4444;
-  --color-danger-hover: #dc2626;
-  --color-danger-light: #451a1a;
+  --color-danger: #f87171;
+  --color-danger-hover: #ef4444;
+  --color-danger-light: #3b1515;
   --color-danger-text: #fca5a5;
 
+  /* Warning */
+  --color-warning: #fbbf24;
+  --color-warning-light: #3b3009;
+
+  /* Accent */
+  --color-accent: #f472b6;
+  --color-accent-light: #3b1530;
+
   /* Surfaces */
-  --color-surface-card: #1f2937;
-  --color-surface-overlay: rgba(0, 0, 0, 0.7);
+  --color-surface-card: #1f2340;
+  --color-surface-overlay: rgba(0, 0, 0, 0.6);
 
   /* Canvas */
-  --color-canvas-bg: #111827;
-  --color-canvas-grid: #374151;
+  --color-canvas-bg: #111322;
+  --color-canvas-grid: #2d3154;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
 }
 
 /* === Global Styles === */
