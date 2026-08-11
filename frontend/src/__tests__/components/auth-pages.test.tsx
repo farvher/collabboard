@@ -79,7 +79,7 @@ describe("LoginPage", () => {
     await user.click(screen.getByRole("button", { name: "Sign in" }));
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/boards");
+      expect(mockPush).toHaveBeenCalledWith("/dashboard");
     });
   });
 
@@ -183,7 +183,7 @@ describe("RegisterPage", () => {
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/boards");
+      expect(mockPush).toHaveBeenCalledWith("/dashboard");
     });
   });
 
