@@ -9,15 +9,15 @@ export default function Home() {
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
-      router.replace("/boards");
+      router.replace("/dashboard");
     } else {
       router.replace("/login");
     }
   }, [router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+    <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg-secondary)]">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-brand)] border-t-transparent" />
     </div>
   );
 }

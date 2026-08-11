@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useOrgStore, type OrgInfo } from "@/stores/org-store";
 import { Avatar } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { NotificationBell } from "@/components/ui/notification-bell";
 import Link from "next/link";
 
 export default function DashboardLayout({
@@ -170,6 +171,7 @@ export default function DashboardLayout({
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-4 space-y-1" aria-label="Dashboard navigation">
+          <NavItem href="/dashboard" label="Dashboard" icon={DashboardIcon} active={pathname === "/dashboard"} />
           <NavItem href="/boards" label="Boards" icon={BoardsIcon} active={pathname === "/boards"} />
           <NavItem href="/organizations" label="Organizations" icon={OrgIcon} active={pathname === "/organizations"} />
           <NavItem href="/templates" label="Templates" icon={TemplatesIcon} active={pathname === "/templates"} />
@@ -221,6 +223,7 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-2">
+            <NotificationBell />
             <ThemeToggle />
             <Avatar name={user?.displayName || user?.email} size="sm" />
           </div>
@@ -249,15 +252,23 @@ function NavItem({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+      className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
         active
-          ? "bg-[var(--color-brand-light)] text-[var(--color-brand-text)]"
+          ? "bg-[var(--color-brand)] text-white shadow-sm"
           : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]"
       }`}
     >
       <Icon className="h-5 w-5 shrink-0" />
       {label}
     </Link>
+  );
+}
+
+function DashboardIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
+    </svg>
   );
 }
 

@@ -19,7 +19,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await login(email, password);
-      router.push("/boards");
+      router.push("/dashboard");
     } catch {
       // Error is already set in the store
     }
