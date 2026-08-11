@@ -12,7 +12,6 @@ env:
   BACKEND_SERVICE: collabboard-backend
   FRONTEND_SERVICE: collabboard-frontend
   SERVICE_ACCOUNT: collabboard-sa@collabboard-505115.iam.gserviceaccount.com
-  CLOUD_SQL_CONNECTION: collabboard-505115:us-central1:collabboard-db
   GCS_BUCKET: collabboard-505115-storage
 
 jobs:
@@ -69,15 +68,13 @@ jobs:
           image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ steps.tag.outputs.tag }}
           env_vars: |
             SPRING_PROFILES_ACTIVE=gcp
-            CLOUD_SQL_CONNECTION_NAME=${{ env.CLOUD_SQL_CONNECTION }}
-            DB_NAME=collabboard
-            DB_USER=collabboard
             GCS_BUCKET_NAME=${{ env.GCS_BUCKET }}
+            DB_USER=neondb_owner
           secrets: |
             DB_PASSWORD=db-password:latest
             JWT_SECRET=jwt-secret:latest
+            DATABASE_URL=database-url:latest
           flags: |
-            --add-cloudsql-instances=${{ env.CLOUD_SQL_CONNECTION }}
             --service-account=${{ env.SERVICE_ACCOUNT }}
             --port=8080
             --memory=512Mi
